@@ -1,4 +1,6 @@
 ActivemqDemo::Application.routes.draw do
+  resources :orders
+
   #get "say_hello_world/index"
   #resources :say_hello_world
   match "say_hello_world" => "say_hello_world#say_hello"
