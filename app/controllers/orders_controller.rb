@@ -14,10 +14,12 @@ class OrdersController < ApplicationController
     respond_to is passed a block of code, which is converted to a
     Proc by &. Proc objects are blocks of code that have been bound
     to a set of local variables. They are also known as function objects
-    or functors. Inside the respond_to method,
+    or functors. A block is bound to a single objct, but a Proc is not;
+    and hence Procs are reusable. Inside the respond_to method,
     we end up with a Proc that takes one argument.
     When we call the Proc from inside respond_to, we pass in, as an argument,
-    an instance of the Responder class.
+    an instance of the Responder class. The respond_to method in ActionController
+    is defined as follows.
 
     def respond_to(&block)
       responder = Responder.new(self)
@@ -44,6 +46,9 @@ class OrdersController < ApplicationController
     browser.
 =end
     respond_to do |format|
+      #We send the respond_to method to ActionController with a block of code.
+      #The code block interacts with a variable used within the respond_to
+      #method (format) and works on it.
       format.html # index.html.erb
       format.json { render json: @orders }
     end
