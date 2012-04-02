@@ -10,6 +10,39 @@ class OrdersController < ApplicationController
   def index
     @orders = Order.all
 
+=begin
+    respond_to is passed a block of code, which is converted to a
+    Proc by &. Proc objects are blocks of code that have been bound
+    to a set of local variables. They are also known as function objects
+    or functors. Inside the respond_to method,
+    we end up with a Proc that takes one argument.
+    When we call the Proc from inside respond_to, we pass in, as an argument,
+    an instance of the Responder class.
+
+    def respond_to(&block)
+      responder = Responder.new(self)
+      #responder now becomes a parameter to the Proc
+      block.call(responder)
+      responder.respond
+    end
+
+    The respond method in ActionController::Responder
+    is defined as follows.
+
+    def respond
+      method = "to_#{format}"
+      #First we try to render a template, if the template is not available,
+      #we verify if the resource responds to :to_format and display it.
+      respond_to?(method) ? send(method) : to_format
+    end
+
+    So we end up calling .html and .xml on an instance of the responder class
+    as it is passed into the block (that’s been converted to a Proc) inside the
+    respond_to method. Rails determines the desired response format from the
+    HTTP Accept header submitted by the client. The default format is HTML,
+    for XML or JSON, it has to be specified through the address bar of the
+    browser.
+=end
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @orders }
@@ -49,14 +82,19 @@ class OrdersController < ApplicationController
     @order = Order.new(params[:order])
 
     respond_to do |format|
-      if @order.save
-        format.html { redirect_to @order, notice: 'Order was successfully created.' }
-        format.json { render json: @order, status: :created, location: @order }
-      else
-        format.html { render action: "new" }
-        format.json { render json: @order.errors, status: :unprocessable_entity }
-      end
+    if @order.save
+=begin
+         flash[:notice] when redirecting, flash.now[:notice] when rendering.
+=end
+      flash[:notice] = 'Order has been submitted'
+      #to_xml builds an XML document to represent the model.
+      publish :order, @order.to_xml
+      #Using the Post/Redirect/Get (PRG) design pattern here
+      format.html { redirect_to @order }
+    else
+      format.html { render action: "new" }
     end
+   end
   end
 
   # PUT /orders/1
